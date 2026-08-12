@@ -15,17 +15,23 @@ Generates Mermaid ERDs and DAGs for PRs and docs, using a consistent color langu
 
 ## Color convention
 
-Always define these two classes at the top of every diagram:
+Define these classes at the top of every diagram:
 
 ```
 classDef newNode fill:#22c55e,stroke:#15803d,color:#fff
+classDef changedNode fill:#f59e0b,stroke:#b45309,color:#fff
 classDef existingNode fill:#9ca3af,stroke:#4b5563,color:#fff
 ```
 
-- **Green (`newNode`)** = new in this PR/migration
-- **Gray (`existingNode`)** = pre-existing, unchanged
+| Class | Color | Meaning |
+|---|---|---|
+| `newNode` | green | Created in this PR/migration — didn't exist before |
+| `changedNode` | amber | Already existed, but this PR modifies it |
+| `existingNode` | gray | Pre-existing and untouched — context only |
 
-Tag every node with `:::newNode` or `:::existingNode`. Don't leave nodes untagged — an unstyled node in a diagram that otherwise uses this convention reads as ambiguous, not neutral.
+Tag every node with one of the three. Don't leave nodes untagged — an unstyled node in a diagram that otherwise uses this convention reads as ambiguous, not neutral.
+
+Omit `changedNode` from the `classDef` block when nothing is being modified; a declared-but-unused class is noise. The distinction between amber and gray is what tells a reviewer where to look, so it's worth being precise: a table that gains a column is `changedNode`, a table merely referenced for context is `existingNode`.
 
 ### Subgraph backgrounds
 
@@ -48,50 +54,65 @@ Pick a distinct muted tone per group (light gray, light indigo, light amber, etc
 ```mermaid
 flowchart TD
     classDef newNode fill:#22c55e,stroke:#15803d,color:#fff
+    classDef changedNode fill:#f59e0b,stroke:#b45309,color:#fff
     classDef existingNode fill:#9ca3af,stroke:#4b5563,color:#fff
 
     USERS["users"]:::existingNode
-    ORDERS["orders"]:::existingNode
+    ORDERS["orders<br/><i>+ refund_total</i>"]:::changedNode
     ORDER_ITEMS["order_items"]:::existingNode
-    PRODUCTS["products"]:::existingNode
-    REFUNDS["refunds"]:::newNode
+    REFUNDS["refunds<br/><i>PK refund_id</i>"]:::newNode
 
     USERS --> ORDERS
     ORDERS --> ORDER_ITEMS
-    ORDER_ITEMS --> PRODUCTS
     ORDERS --> REFUNDS
 ```
 
-If the user specifically wants true `erDiagram` cardinality notation (`||--o{`, etc.) and doesn't need color, use standard `erDiagram` syntax instead — flag the styling tradeoff so they can choose.
+Put the one or two columns that matter to the change inside the node label with `<br/>` — the new PK on a new table, the added column on a changed one. That's what makes an ERD reviewable without opening the migration.
+
+If the user specifically wants true `erDiagram` cardinality notation (`||--o{`, etc.) and doesn't need color, use standard `erDiagram` syntax instead — flag the styling tradeoff so they can choose:
+
+```mermaid
+erDiagram
+    USERS ||--o{ ORDERS : places
+    ORDERS ||--o{ ORDER_ITEMS : contains
+    ORDERS ||--o{ REFUNDS : "issued against"
+
+    REFUNDS {
+        uuid refund_id PK
+        uuid order_id FK
+        numeric amount
+    }
+```
 
 ## DAG pattern
 
 ```mermaid
 flowchart LR
     classDef newNode fill:#22c55e,stroke:#15803d,color:#fff
+    classDef changedNode fill:#f59e0b,stroke:#b45309,color:#fff
     classDef existingNode fill:#9ca3af,stroke:#4b5563,color:#fff
 
-    subgraph sources[Sources]
-        raw_orders["raw_orders"]:::existingNode
-        raw_refunds["raw_refunds"]:::newNode
-    end
-
-    subgraph transform[Transform]
+    subgraph staging[Staging]
         stg_orders["stg_orders"]:::existingNode
         stg_refunds["stg_refunds"]:::newNode
     end
 
-    subgraph outputs[Outputs]
-        fct_orders["fct_orders"]:::existingNode
+    subgraph transform[Transform]
+        int_orders["int_orders"]:::existingNode
+        int_refunds["int_refunds"]:::newNode
+    end
+
+    subgraph mart[Mart]
+        fct_orders["fct_orders"]:::changedNode
         fct_refunds["fct_refunds"]:::newNode
     end
 
-    style sources fill:#f3f4f6,stroke:#d1d5db,color:#111827
+    style staging fill:#f3f4f6,stroke:#d1d5db,color:#111827
     style transform fill:#eef2ff,stroke:#c7d2fe,color:#111827
-    style outputs fill:#fefce8,stroke:#fde68a,color:#111827
+    style mart fill:#fefce8,stroke:#fde68a,color:#111827
 
-    raw_orders --> stg_orders --> fct_orders
-    raw_refunds --> stg_refunds --> fct_refunds
+    stg_orders --> int_orders --> fct_orders
+    stg_refunds --> int_refunds --> fct_refunds
     fct_orders --> fct_refunds
 ```
 
