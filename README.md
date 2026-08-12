@@ -77,14 +77,14 @@ flowchart LR
 
 ### ERD
 
-The same change as a star schema — real crow's-foot cardinality, with attributes spelled out only for the two entities under review. ERDs carry state in the border rather than the fill, so the attribute text stays readable.
+The same change as a star schema — real crow's-foot cardinality, with attributes spelled out only for the two entities under review. ERDs style the outline only, leaving box and text colors to the theme, so they stay readable in both GitHub light and dark mode.
 
 ```mermaid
 %%{init: {'themeVariables': {'fontSize':'18px'}}}%%
 erDiagram
-    classDef newNode      fill:#ffffff,stroke:#15803d,stroke-width:3px
-    classDef changedNode  fill:#ffffff,stroke:#b45309,stroke-width:3px
-    classDef existingNode fill:#ffffff,stroke:#9ca3af,stroke-width:1px
+    classDef newNode      stroke:#22c55e,stroke-width:3px
+    classDef changedNode  stroke:#f59e0b,stroke-width:3px
+    classDef existingNode stroke:#9ca3af,stroke-width:1px
 
     DIM_ORDERS    ||--o{ FACT_REFUNDS : "refunded by"
     DIM_CUSTOMERS ||--o{ FACT_REFUNDS : "requested by"
@@ -114,9 +114,9 @@ erDiagram
 ````
 %%{init: {'themeVariables': {'fontSize':'18px'}}}%%
 erDiagram
-    classDef newNode      fill:#ffffff,stroke:#15803d,stroke-width:3px
-    classDef changedNode  fill:#ffffff,stroke:#b45309,stroke-width:3px
-    classDef existingNode fill:#ffffff,stroke:#9ca3af,stroke-width:1px
+    classDef newNode      stroke:#22c55e,stroke-width:3px
+    classDef changedNode  stroke:#f59e0b,stroke-width:3px
+    classDef existingNode stroke:#9ca3af,stroke-width:1px
 
     DIM_ORDERS    ||--o{ FACT_REFUNDS : "refunded by"
     DIM_CUSTOMERS ||--o{ FACT_REFUNDS : "requested by"
@@ -149,7 +149,7 @@ Ask directly ("diagram this migration") or just let it fire — it triggers on "
 Beyond the color convention, it encodes the fiddly parts of Mermaid that are easy to get wrong:
 
 - `erDiagram` accepts `classDef` in Mermaid 11+, so colored ERDs keep real crow's-foot cardinality — no need to fake one with a flowchart
-- ERDs need an explicit `fill:#ffffff` and no `color:` — Mermaid zebra-stripes attribute rows with your fill, and omitting fill lets a default lavender header band through
+- ERDs must set `stroke` only — a hardcoded `fill` gets zebra-striped across the attribute rows, and breaks whichever of GitHub light/dark mode you didn't test
 - Subgraph titles render white by default, invisible in GitHub dark mode, until you set `color:` explicitly
 - `fontSizeCluster` isn't a real theme variable, so subgraph title size needs a `classDef`
 - Diagrams shrink as they get busier; font size and `useMaxWidth: false` are the levers that fight back

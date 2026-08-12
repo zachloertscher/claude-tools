@@ -33,7 +33,9 @@ Tag every node with one of the three. Don't leave nodes untagged — an unstyled
 
 Omit `changedNode` from the `classDef` block when nothing is being modified; a declared-but-unused class is noise. The distinction between amber and gray is what tells a reviewer where to look, so it's worth being precise: a table that gains a column is `changedNode`, a table merely referenced for context is `existingNode`.
 
-**The fills above are for flowcharts only.** ERDs keep white boxes and carry the same three hues in the border instead — see the ERD section for why. Same semantics (green new, amber changed, gray untouched), different treatment per diagram type.
+**The fills above are for flowcharts only.** ERDs style the stroke and leave `fill`/`color` alone — see the ERD section for why. Same semantics (green new, amber changed, gray untouched), different treatment per diagram type.
+
+Hardcoded `fill` and `color` values are safe on flowchart nodes, whose labels are a single line you control the contrast of. They are not safe on anything with attribute rows. Any diagram that must survive both GitHub light and dark mode should set as little color as it can get away with.
 
 ### Subgraph backgrounds
 
@@ -53,29 +55,28 @@ Pick a distinct muted tone per group (light gray, light indigo, light amber, etc
 
 Use real `erDiagram` syntax with crow's-foot notation. Mermaid 11 supports `classDef` and `:::` on entities, so you get cardinality **and** color — don't fake an ERD with a flowchart.
 
-**ERDs are outlined, not filled.** Entities are tables of text, and Mermaid zebra-stripes the attribute rows with whatever fill you set — any fill turns that striping into noise competing with the column names. Keep the boxes white and put the state in the border:
+**Style the stroke only — never set `fill` or `color` on an ERD class.** Entities are tables of text. Any fill you set gets zebra-striped across the attribute rows and fights the column names, and a hardcoded fill or text color breaks whichever theme you didn't test: `fill:#ffffff` looks fine in light mode and renders white-on-white in GitHub dark mode. Leaving both unset lets Mermaid's theme supply matching box and text colors, so the diagram is readable in both:
 
 ```
-classDef newNode      fill:#ffffff,stroke:#15803d,stroke-width:3px
-classDef changedNode  fill:#ffffff,stroke:#b45309,stroke-width:3px
-classDef existingNode fill:#ffffff,stroke:#9ca3af,stroke-width:1px
+classDef newNode      stroke:#22c55e,stroke-width:3px
+classDef changedNode  stroke:#f59e0b,stroke-width:3px
+classDef existingNode stroke:#9ca3af,stroke-width:1px
 ```
 
-Two details make this work:
+Use the saturated hues here (`#22c55e`, `#f59e0b`), not the darker DAG stroke colors — a 3px border is a thin target, so it needs the brighter value to read against a dark background.
 
-- **Set `fill:#ffffff` explicitly** — don't just omit `fill`. Leaving it out lets Mermaid's default lavender header band show through, which gives untouched and new entities the same header color and kills the signal.
-- **Omit `color:` entirely.** Setting `color:#fff` (as the DAG classes do) forces white text onto white boxes. Dark default text is correct here.
+Untouched entities sit at 1px gray and look near-default, which is the point: the eye goes to the thick colored borders.
 
-Untouched entities end up looking near-default at 1px gray, which is the point — a reviewer's eye goes to the thick colored borders.
+The same rule applies to any Mermaid diagram whose nodes contain rows of text — `classDiagram`, `stateDiagram`. Outline them; don't fill them.
 
 Declare entity classes after the relationships, one per line:
 
 ```mermaid
 %%{init: {'themeVariables': {'fontSize':'18px'}}}%%
 erDiagram
-    classDef newNode      fill:#ffffff,stroke:#15803d,stroke-width:3px
-    classDef changedNode  fill:#ffffff,stroke:#b45309,stroke-width:3px
-    classDef existingNode fill:#ffffff,stroke:#9ca3af,stroke-width:1px
+    classDef newNode      stroke:#22c55e,stroke-width:3px
+    classDef changedNode  stroke:#f59e0b,stroke-width:3px
+    classDef existingNode stroke:#9ca3af,stroke-width:1px
 
     DIM_ORDERS    ||--o{ FACT_REFUNDS : "refunded by"
     DIM_CUSTOMERS ||--o{ FACT_REFUNDS : "requested by"
