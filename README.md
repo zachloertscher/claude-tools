@@ -33,8 +33,8 @@ flowchart LR
     end
 
     style staging fill:#f3f4f6,stroke:#d1d5db,color:#111827
-    style intermediate fill:#eef2ff,stroke:#c7d2fe,color:#111827
-    style mart fill:#fefce8,stroke:#fde68a,color:#111827
+    style intermediate fill:#f3f4f6,stroke:#d1d5db,color:#111827
+    style mart fill:#f3f4f6,stroke:#d1d5db,color:#111827
 
     stg_orders --> int_orders --> dim_orders
     stg_refunds --> int_refunds --> fact_refunds
@@ -66,8 +66,8 @@ flowchart LR
     end
 
     style staging fill:#f3f4f6,stroke:#d1d5db,color:#111827
-    style intermediate fill:#eef2ff,stroke:#c7d2fe,color:#111827
-    style mart fill:#fefce8,stroke:#fde68a,color:#111827
+    style intermediate fill:#f3f4f6,stroke:#d1d5db,color:#111827
+    style mart fill:#f3f4f6,stroke:#d1d5db,color:#111827
 
     stg_orders --> int_orders --> dim_orders
     stg_refunds --> int_refunds --> fact_refunds

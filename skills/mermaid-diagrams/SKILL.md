@@ -39,17 +39,19 @@ Hardcoded `fill` and `color` values are safe on flowchart nodes, whose labels ar
 
 ### Subgraph backgrounds
 
-When grouping nodes into a `subgraph` (e.g. a pipeline stage, a service boundary, a domain), give the subgraph itself a **muted, low-saturation background** — not the bright green/gray used for individual nodes, since a bright background behind bright nodes gets visually noisy and makes it harder to tell which color signals "new/existing" vs. "grouping."
+When grouping nodes into a `subgraph` (e.g. a pipeline stage, a service boundary, a domain), give every subgraph the **same muted neutral background** — not the bright green/gray used for individual nodes, since a bright background behind bright nodes gets visually noisy and makes it harder to tell which color signals "new/existing" vs. "grouping."
+
+**Use one background color for all subgraphs, not a different tint per group.** Varying the tint implies the groups differ in kind, which they usually don't — staging, intermediate, and mart are sequential stages of one pipeline, not three categories. The subgraph title already names the group; color spent there is color stolen from the new/changed/untouched signal, which is the only thing in the diagram that should read as meaningful.
 
 **Always set `color:#111827` on the subgraph style.** Subgraph titles otherwise inherit the theme's text color, which renders white — invisible against a light background, and unreadable in GitHub dark mode.
 
 ```
 style staging fill:#f3f4f6,stroke:#d1d5db,color:#111827
-style intermediate fill:#eef2ff,stroke:#c7d2fe,color:#111827
-style mart fill:#fefce8,stroke:#fde68a,color:#111827
+style intermediate fill:#f3f4f6,stroke:#d1d5db,color:#111827
+style mart fill:#f3f4f6,stroke:#d1d5db,color:#111827
 ```
 
-Pick a distinct muted tone per group (light gray, light indigo, light amber, etc.) so groups are visually separable without competing with the new/existing node colors.
+Reach for per-group tints only when the groups genuinely are different kinds of thing — separate repos, or a boundary between two engines — and even then keep them adjacent on the color wheel so no single group looks flagged.
 
 ## ERD pattern
 
@@ -130,8 +132,8 @@ flowchart LR
     end
 
     style staging fill:#f3f4f6,stroke:#d1d5db,color:#111827
-    style intermediate fill:#eef2ff,stroke:#c7d2fe,color:#111827
-    style mart fill:#fefce8,stroke:#fde68a,color:#111827
+    style intermediate fill:#f3f4f6,stroke:#d1d5db,color:#111827
+    style mart fill:#f3f4f6,stroke:#d1d5db,color:#111827
 
     stg_orders --> int_orders --> dim_orders
     stg_refunds --> int_refunds --> fact_refunds
@@ -160,7 +162,7 @@ When a diagram spans more than one repo, service, or architecture layer, name ea
 Subgraph titles render large by default, and **theme variables do not control their size** — `fontSizeCluster` is not a real Mermaid variable and is silently ignored. Use a `classDef` with `font-size` applied to the subgraph id:
 
 ```
-classDef grp fill:#eef2ff,stroke:#c7d2fe,color:#374151,font-size:11px
+classDef grp fill:#f3f4f6,stroke:#d1d5db,color:#374151,font-size:11px
 class api grp
 class worker grp
 ```
