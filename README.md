@@ -172,3 +172,7 @@ cp -R skills/mermaid-diagrams /path/to/project/.claude/skills/
 ```
 
 Claude Code picks up skills from `~/.claude/skills/` (global) and `.claude/skills/` (per-project). No restart needed.
+
+## License
+
+[MIT](LICENSE) — use it however you like.
