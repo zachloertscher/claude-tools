@@ -10,16 +10,16 @@ Personal Claude Code skills.
 
 ## Install
 
-Symlink a skill into your global skills dir to use it everywhere:
+Copy a skill into your global skills dir to use it in every project:
 
 ```bash
-ln -s "$PWD/skills/mermaid-diagrams" ~/.claude/skills/mermaid-diagrams
+cp -R skills/mermaid-diagrams ~/.claude/skills/
 ```
 
-Or copy it into a specific project:
+Or into a single project:
 
 ```bash
 cp -R skills/mermaid-diagrams /path/to/project/.claude/skills/
 ```
 
-`.claude/skills/` in this repo symlinks to `skills/`, so the skills are live when working here.
+Claude Code picks up skills from `~/.claude/skills/` (global) and `.claude/skills/` (per-project). No restart needed.
