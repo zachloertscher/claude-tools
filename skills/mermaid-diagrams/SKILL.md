@@ -33,7 +33,7 @@ Tag every node with one of the three. Don't leave nodes untagged — an unstyled
 
 Omit `changedNode` from the `classDef` block when nothing is being modified; a declared-but-unused class is noise. The distinction between amber and gray is what tells a reviewer where to look, so it's worth being precise: a table that gains a column is `changedNode`, a table merely referenced for context is `existingNode`.
 
-The `color:#fff` above is for **flowcharts only**. In `erDiagram`, drop it — see the ERD section.
+**The saturated fills above are for flowcharts only.** ERDs use pale tints of the same three hues and omit `color:` — see the ERD section for why. Same semantics (green new, amber changed, gray untouched), different intensity per diagram type.
 
 ### Subgraph backgrounds
 
@@ -53,16 +53,24 @@ Pick a distinct muted tone per group (light gray, light indigo, light amber, etc
 
 Use real `erDiagram` syntax with crow's-foot notation. Mermaid 11 supports `classDef` and `:::` on entities, so you get cardinality **and** color — don't fake an ERD with a flowchart.
 
-**Omit `color:` from ERD classDefs.** Setting `color:#fff` (as the DAG classes do) forces white text into the attribute rows, which have white backgrounds — the attributes become invisible. Let the attribute text default to dark.
+**ERDs use pale tint fills, not the saturated DAG colors.** Entities are tables of text, and Mermaid zebra-stripes the attribute rows with your fill color — a saturated fill turns that striping into visual noise that fights the column names. Tint the fill and put the saturation in the stroke instead:
+
+```
+classDef newNode      fill:#dcfce7,stroke:#15803d,stroke-width:2px
+classDef changedNode  fill:#fef3c7,stroke:#b45309,stroke-width:2px
+classDef existingNode fill:#f9fafb,stroke:#9ca3af,stroke-width:1px
+```
+
+**Omit `color:` entirely.** Setting `color:#fff` (as the DAG classes do) forces white text into attribute rows that are half white-backgrounded, making those columns invisible. Dark default text on a pale fill is legible everywhere.
 
 Declare entity classes after the relationships, one per line:
 
 ```mermaid
 %%{init: {'themeVariables': {'fontSize':'18px'}}}%%
 erDiagram
-    classDef newNode fill:#22c55e,stroke:#15803d
-    classDef changedNode fill:#f59e0b,stroke:#b45309
-    classDef existingNode fill:#9ca3af,stroke:#4b5563
+    classDef newNode      fill:#dcfce7,stroke:#15803d,stroke-width:2px
+    classDef changedNode  fill:#fef3c7,stroke:#b45309,stroke-width:2px
+    classDef existingNode fill:#f9fafb,stroke:#9ca3af,stroke-width:1px
 
     DIM_ORDERS    ||--o{ FACT_REFUNDS : "refunded by"
     DIM_CUSTOMERS ||--o{ FACT_REFUNDS : "requested by"
@@ -85,6 +93,8 @@ erDiagram
     DIM_CUSTOMERS:::existingNode
     DIM_DATE:::existingNode
 ```
+
+Don't try outline-only styling (white fill, colored border). Mermaid renders the entity header band in a default lavender that `classDef` doesn't override, so untouched and new entities end up sharing a header color and the state signal collapses into a thin border.
 
 Cardinality carries real information — use it rather than plain arrows. `||--o{` is one-to-many, `}o--o{` many-to-many, `||--||` one-to-one.
 

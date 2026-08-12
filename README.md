@@ -77,14 +77,14 @@ flowchart LR
 
 ### ERD
 
-The same change as a star schema — real crow's-foot cardinality, with attributes spelled out only for the two entities under review.
+The same change as a star schema — real crow's-foot cardinality, with attributes spelled out only for the two entities under review. ERDs use pale tints rather than the DAG's solid fills, so the attribute text stays readable.
 
 ```mermaid
 %%{init: {'themeVariables': {'fontSize':'18px'}}}%%
 erDiagram
-    classDef newNode fill:#22c55e,stroke:#15803d
-    classDef changedNode fill:#f59e0b,stroke:#b45309
-    classDef existingNode fill:#9ca3af,stroke:#4b5563
+    classDef newNode      fill:#dcfce7,stroke:#15803d,stroke-width:2px
+    classDef changedNode  fill:#fef3c7,stroke:#b45309,stroke-width:2px
+    classDef existingNode fill:#f9fafb,stroke:#9ca3af,stroke-width:1px
 
     DIM_ORDERS    ||--o{ FACT_REFUNDS : "refunded by"
     DIM_CUSTOMERS ||--o{ FACT_REFUNDS : "requested by"
@@ -114,9 +114,9 @@ erDiagram
 ````
 %%{init: {'themeVariables': {'fontSize':'18px'}}}%%
 erDiagram
-    classDef newNode fill:#22c55e,stroke:#15803d
-    classDef changedNode fill:#f59e0b,stroke:#b45309
-    classDef existingNode fill:#9ca3af,stroke:#4b5563
+    classDef newNode      fill:#dcfce7,stroke:#15803d,stroke-width:2px
+    classDef changedNode  fill:#fef3c7,stroke:#b45309,stroke-width:2px
+    classDef existingNode fill:#f9fafb,stroke:#9ca3af,stroke-width:1px
 
     DIM_ORDERS    ||--o{ FACT_REFUNDS : "refunded by"
     DIM_CUSTOMERS ||--o{ FACT_REFUNDS : "requested by"
@@ -149,7 +149,7 @@ Ask directly ("diagram this migration") or just let it fire — it triggers on "
 Beyond the color convention, it encodes the fiddly parts of Mermaid that are easy to get wrong:
 
 - `erDiagram` accepts `classDef` in Mermaid 11+, so colored ERDs keep real crow's-foot cardinality — no need to fake one with a flowchart
-- ERD classDefs must omit `color:` — setting white text makes the white-backgrounded attribute rows unreadable
+- ERDs need pale tint fills and no `color:` — Mermaid zebra-stripes attribute rows with your fill, so saturated colors and forced white text both wreck legibility
 - Subgraph titles render white by default, invisible in GitHub dark mode, until you set `color:` explicitly
 - `fontSizeCluster` isn't a real theme variable, so subgraph title size needs a `classDef`
 - Diagrams shrink as they get busier; font size and `useMaxWidth: false` are the levers that fight back
