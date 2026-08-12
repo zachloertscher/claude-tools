@@ -197,8 +197,12 @@ Also set generous node/rank spacing so boxes don't crowd:
 - GitHub and GitLab both render `classDef`/`class`/`style` directives natively in Mermaid code fences — no plugin needed.
 - `classDef` on `erDiagram` needs **Mermaid 11+**. GitHub is current, so it works there; older Confluence plugins and self-hosted GitLab may not be. If the target renderer is unknown, verify before relying on colored ERDs.
 - Keep entity attribute lists short in ERDs (PK/FK + one or two key fields) — full column lists get visually noisy fast, especially once color is added on top.
-- Verify a diagram renders before shipping it, rather than trusting that the syntax is right:
+- **Verify a diagram renders in both themes before shipping it.** Parsing successfully is not the same as being readable, and a diagram that looks right in light mode can be invisible in dark. Render both and actually look at them:
 
 ```bash
-npx -p @mermaid-js/mermaid-cli mmdc -i diagram.mmd -o out.png -s 2
+npx -p @mermaid-js/mermaid-cli mmdc -i diagram.mmd -o light.png -s 2
+# prepend %%{init: {'theme':'dark'}}%% to a copy, then:
+npx -p @mermaid-js/mermaid-cli mmdc -i dark.mmd -o dark.png -s 2 -b '#0d1117'
 ```
+
+GitHub honors the reader's theme, not the author's — so whichever mode you personally use, the other one is the one you'll ship broken.
