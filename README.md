@@ -4,7 +4,7 @@ Personal [Claude Code](https://claude.com/claude-code) skills.
 
 ## [`mermaid-diagrams`](skills/mermaid-diagrams/SKILL.md)
 
-Mermaid ERDs and lineage DAGs with a consistent color language: **green for new, amber for changed, gray for untouched.** Built primarily for pull request descriptions — a reviewer should see the shape of a change before reading a line of the diff — but it works just as well for architecture docs, onboarding material, and design proposals.
+Mermaid ERDs and lineage DAGs with a consistent color language: **green for new, amber for changed, gray for untouched** — filled nodes in DAGs, outlined entities in ERDs. Built primarily for pull request descriptions — a reviewer should see the shape of a change before reading a line of the diff — but it works just as well for architecture docs, onboarding material, and design proposals.
 
 ### Lineage DAG
 
@@ -77,14 +77,14 @@ flowchart LR
 
 ### ERD
 
-The same change as a star schema — real crow's-foot cardinality, with attributes spelled out only for the two entities under review. ERDs use pale tints rather than the DAG's solid fills, so the attribute text stays readable.
+The same change as a star schema — real crow's-foot cardinality, with attributes spelled out only for the two entities under review. ERDs carry state in the border rather than the fill, so the attribute text stays readable.
 
 ```mermaid
 %%{init: {'themeVariables': {'fontSize':'18px'}}}%%
 erDiagram
-    classDef newNode      fill:#dcfce7,stroke:#15803d,stroke-width:2px
-    classDef changedNode  fill:#fef3c7,stroke:#b45309,stroke-width:2px
-    classDef existingNode fill:#f9fafb,stroke:#9ca3af,stroke-width:1px
+    classDef newNode      fill:#ffffff,stroke:#15803d,stroke-width:3px
+    classDef changedNode  fill:#ffffff,stroke:#b45309,stroke-width:3px
+    classDef existingNode fill:#ffffff,stroke:#9ca3af,stroke-width:1px
 
     DIM_ORDERS    ||--o{ FACT_REFUNDS : "refunded by"
     DIM_CUSTOMERS ||--o{ FACT_REFUNDS : "requested by"
@@ -114,9 +114,9 @@ erDiagram
 ````
 %%{init: {'themeVariables': {'fontSize':'18px'}}}%%
 erDiagram
-    classDef newNode      fill:#dcfce7,stroke:#15803d,stroke-width:2px
-    classDef changedNode  fill:#fef3c7,stroke:#b45309,stroke-width:2px
-    classDef existingNode fill:#f9fafb,stroke:#9ca3af,stroke-width:1px
+    classDef newNode      fill:#ffffff,stroke:#15803d,stroke-width:3px
+    classDef changedNode  fill:#ffffff,stroke:#b45309,stroke-width:3px
+    classDef existingNode fill:#ffffff,stroke:#9ca3af,stroke-width:1px
 
     DIM_ORDERS    ||--o{ FACT_REFUNDS : "refunded by"
     DIM_CUSTOMERS ||--o{ FACT_REFUNDS : "requested by"
@@ -149,7 +149,7 @@ Ask directly ("diagram this migration") or just let it fire — it triggers on "
 Beyond the color convention, it encodes the fiddly parts of Mermaid that are easy to get wrong:
 
 - `erDiagram` accepts `classDef` in Mermaid 11+, so colored ERDs keep real crow's-foot cardinality — no need to fake one with a flowchart
-- ERDs need pale tint fills and no `color:` — Mermaid zebra-stripes attribute rows with your fill, so saturated colors and forced white text both wreck legibility
+- ERDs need an explicit `fill:#ffffff` and no `color:` — Mermaid zebra-stripes attribute rows with your fill, and omitting fill lets a default lavender header band through
 - Subgraph titles render white by default, invisible in GitHub dark mode, until you set `color:` explicitly
 - `fontSizeCluster` isn't a real theme variable, so subgraph title size needs a `classDef`
 - Diagrams shrink as they get busier; font size and `useMaxWidth: false` are the levers that fight back

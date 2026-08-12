@@ -1,9 +1,9 @@
 ---
 name: mermaid-diagrams
-description: Generate Mermaid diagrams (ERDs and DAGs/flowcharts) for PR descriptions, architecture docs, and pipeline documentation, using a consistent green-for-new / gray-for-existing color convention. Make sure to use this skill whenever the user asks to diagram a data model, entity relationship, service architecture, dependency graph, pipeline flow, or migration — even if they just say "diagram this" or "show the DAG" without explicitly mentioning Mermaid or colors. Also use when drafting a PR description that involves a schema change, new pipeline stage, or migration, since a diagram should typically be included.
+description: Generate Mermaid diagrams (ERDs and DAGs/flowcharts) for PR descriptions, architecture docs, and pipeline documentation, using a consistent green-for-new / amber-for-changed / gray-for-untouched color convention. Make sure to use this skill whenever the user asks to diagram a data model, entity relationship, service architecture, dependency graph, pipeline flow, or migration — even if they just say "diagram this" or "show the DAG" without explicitly mentioning Mermaid or colors. Also use when drafting a PR description that involves a schema change, new pipeline stage, or migration, since a diagram should typically be included.
 ---
 
-# Mermaid Diagrams (New vs. Existing convention)
+# Mermaid Diagrams (new / changed / untouched convention)
 
 Generates Mermaid ERDs and DAGs for PRs and docs, using a consistent color language so reviewers can tell new work from existing structure at a glance.
 
@@ -33,7 +33,7 @@ Tag every node with one of the three. Don't leave nodes untagged — an unstyled
 
 Omit `changedNode` from the `classDef` block when nothing is being modified; a declared-but-unused class is noise. The distinction between amber and gray is what tells a reviewer where to look, so it's worth being precise: a table that gains a column is `changedNode`, a table merely referenced for context is `existingNode`.
 
-**The saturated fills above are for flowcharts only.** ERDs use pale tints of the same three hues and omit `color:` — see the ERD section for why. Same semantics (green new, amber changed, gray untouched), different intensity per diagram type.
+**The fills above are for flowcharts only.** ERDs keep white boxes and carry the same three hues in the border instead — see the ERD section for why. Same semantics (green new, amber changed, gray untouched), different treatment per diagram type.
 
 ### Subgraph backgrounds
 
@@ -42,9 +42,9 @@ When grouping nodes into a `subgraph` (e.g. a pipeline stage, a service boundary
 **Always set `color:#111827` on the subgraph style.** Subgraph titles otherwise inherit the theme's text color, which renders white — invisible against a light background, and unreadable in GitHub dark mode.
 
 ```
-style sources fill:#f3f4f6,stroke:#d1d5db,color:#111827
-style transform fill:#eef2ff,stroke:#c7d2fe,color:#111827
-style outputs fill:#fefce8,stroke:#fde68a,color:#111827
+style staging fill:#f3f4f6,stroke:#d1d5db,color:#111827
+style intermediate fill:#eef2ff,stroke:#c7d2fe,color:#111827
+style mart fill:#fefce8,stroke:#fde68a,color:#111827
 ```
 
 Pick a distinct muted tone per group (light gray, light indigo, light amber, etc.) so groups are visually separable without competing with the new/existing node colors.
@@ -53,24 +53,29 @@ Pick a distinct muted tone per group (light gray, light indigo, light amber, etc
 
 Use real `erDiagram` syntax with crow's-foot notation. Mermaid 11 supports `classDef` and `:::` on entities, so you get cardinality **and** color — don't fake an ERD with a flowchart.
 
-**ERDs use pale tint fills, not the saturated DAG colors.** Entities are tables of text, and Mermaid zebra-stripes the attribute rows with your fill color — a saturated fill turns that striping into visual noise that fights the column names. Tint the fill and put the saturation in the stroke instead:
+**ERDs are outlined, not filled.** Entities are tables of text, and Mermaid zebra-stripes the attribute rows with whatever fill you set — any fill turns that striping into noise competing with the column names. Keep the boxes white and put the state in the border:
 
 ```
-classDef newNode      fill:#dcfce7,stroke:#15803d,stroke-width:2px
-classDef changedNode  fill:#fef3c7,stroke:#b45309,stroke-width:2px
-classDef existingNode fill:#f9fafb,stroke:#9ca3af,stroke-width:1px
+classDef newNode      fill:#ffffff,stroke:#15803d,stroke-width:3px
+classDef changedNode  fill:#ffffff,stroke:#b45309,stroke-width:3px
+classDef existingNode fill:#ffffff,stroke:#9ca3af,stroke-width:1px
 ```
 
-**Omit `color:` entirely.** Setting `color:#fff` (as the DAG classes do) forces white text into attribute rows that are half white-backgrounded, making those columns invisible. Dark default text on a pale fill is legible everywhere.
+Two details make this work:
+
+- **Set `fill:#ffffff` explicitly** — don't just omit `fill`. Leaving it out lets Mermaid's default lavender header band show through, which gives untouched and new entities the same header color and kills the signal.
+- **Omit `color:` entirely.** Setting `color:#fff` (as the DAG classes do) forces white text onto white boxes. Dark default text is correct here.
+
+Untouched entities end up looking near-default at 1px gray, which is the point — a reviewer's eye goes to the thick colored borders.
 
 Declare entity classes after the relationships, one per line:
 
 ```mermaid
 %%{init: {'themeVariables': {'fontSize':'18px'}}}%%
 erDiagram
-    classDef newNode      fill:#dcfce7,stroke:#15803d,stroke-width:2px
-    classDef changedNode  fill:#fef3c7,stroke:#b45309,stroke-width:2px
-    classDef existingNode fill:#f9fafb,stroke:#9ca3af,stroke-width:1px
+    classDef newNode      fill:#ffffff,stroke:#15803d,stroke-width:3px
+    classDef changedNode  fill:#ffffff,stroke:#b45309,stroke-width:3px
+    classDef existingNode fill:#ffffff,stroke:#9ca3af,stroke-width:1px
 
     DIM_ORDERS    ||--o{ FACT_REFUNDS : "refunded by"
     DIM_CUSTOMERS ||--o{ FACT_REFUNDS : "requested by"
@@ -93,8 +98,6 @@ erDiagram
     DIM_CUSTOMERS:::existingNode
     DIM_DATE:::existingNode
 ```
-
-Don't try outline-only styling (white fill, colored border). Mermaid renders the entity header band in a default lavender that `classDef` doesn't override, so untouched and new entities end up sharing a header color and the state signal collapses into a thin border.
 
 Cardinality carries real information — use it rather than plain arrows. `||--o{` is one-to-many, `}o--o{` many-to-many, `||--||` one-to-one.
 
