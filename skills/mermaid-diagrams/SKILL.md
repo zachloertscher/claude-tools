@@ -33,6 +33,8 @@ Tag every node with one of the three. Don't leave nodes untagged — an unstyled
 
 Omit `changedNode` from the `classDef` block when nothing is being modified; a declared-but-unused class is noise. The distinction between amber and gray is what tells a reviewer where to look, so it's worth being precise: a table that gains a column is `changedNode`, a table merely referenced for context is `existingNode`.
 
+The `color:#fff` above is for **flowcharts only**. In `erDiagram`, drop it — see the ERD section.
+
 ### Subgraph backgrounds
 
 When grouping nodes into a `subgraph` (e.g. a pipeline stage, a service boundary, a domain), give the subgraph itself a **muted, low-saturation background** — not the bright green/gray used for individual nodes, since a bright background behind bright nodes gets visually noisy and makes it harder to tell which color signals "new/existing" vs. "grouping."
@@ -49,40 +51,46 @@ Pick a distinct muted tone per group (light gray, light indigo, light amber, etc
 
 ## ERD pattern
 
-`erDiagram` does **not** support per-node color styling in current Mermaid versions. For a colored ERD, use flowchart syntax styled to read like an entity diagram instead:
+Use real `erDiagram` syntax with crow's-foot notation. Mermaid 11 supports `classDef` and `:::` on entities, so you get cardinality **and** color — don't fake an ERD with a flowchart.
+
+**Omit `color:` from ERD classDefs.** Setting `color:#fff` (as the DAG classes do) forces white text into the attribute rows, which have white backgrounds — the attributes become invisible. Let the attribute text default to dark.
+
+Declare entity classes after the relationships, one per line:
 
 ```mermaid
-flowchart TD
-    classDef newNode fill:#22c55e,stroke:#15803d,color:#fff
-    classDef changedNode fill:#f59e0b,stroke:#b45309,color:#fff
-    classDef existingNode fill:#9ca3af,stroke:#4b5563,color:#fff
-
-    USERS["users"]:::existingNode
-    ORDERS["orders<br/><i>+ refund_total</i>"]:::changedNode
-    ORDER_ITEMS["order_items"]:::existingNode
-    REFUNDS["refunds<br/><i>PK refund_id</i>"]:::newNode
-
-    USERS --> ORDERS
-    ORDERS --> ORDER_ITEMS
-    ORDERS --> REFUNDS
-```
-
-Put the one or two columns that matter to the change inside the node label with `<br/>` — the new PK on a new table, the added column on a changed one. That's what makes an ERD reviewable without opening the migration.
-
-If the user specifically wants true `erDiagram` cardinality notation (`||--o{`, etc.) and doesn't need color, use standard `erDiagram` syntax instead — flag the styling tradeoff so they can choose:
-
-```mermaid
+%%{init: {'themeVariables': {'fontSize':'18px'}}}%%
 erDiagram
-    USERS ||--o{ ORDERS : places
-    ORDERS ||--o{ ORDER_ITEMS : contains
-    ORDERS ||--o{ REFUNDS : "issued against"
+    classDef newNode fill:#22c55e,stroke:#15803d
+    classDef changedNode fill:#f59e0b,stroke:#b45309
+    classDef existingNode fill:#9ca3af,stroke:#4b5563
 
-    REFUNDS {
+    DIM_ORDERS    ||--o{ FACT_REFUNDS : "refunded by"
+    DIM_CUSTOMERS ||--o{ FACT_REFUNDS : "requested by"
+    DIM_DATE      ||--o{ FACT_REFUNDS : "issued on"
+
+    FACT_REFUNDS {
         uuid refund_id PK
         uuid order_id FK
-        numeric amount
+        uuid customer_id FK
+        date issued_date FK
+        numeric refund_amount
     }
+    DIM_ORDERS {
+        uuid order_id PK
+        numeric refund_total "added"
+    }
+
+    FACT_REFUNDS:::newNode
+    DIM_ORDERS:::changedNode
+    DIM_CUSTOMERS:::existingNode
+    DIM_DATE:::existingNode
 ```
+
+Cardinality carries real information — use it rather than plain arrows. `||--o{` is one-to-many, `}o--o{` many-to-many, `||--||` one-to-one.
+
+**Only spell out attributes for entities the change touches.** A new fact gets its PK, FKs, and measures; a changed dimension gets its PK plus the added column, tagged with a `"added"` comment. Untouched context entities get no attribute block at all — that's what keeps the diagram readable, and the empty box reads correctly as "nothing to review here."
+
+For dimensional models, put the fact at the center and the dimensions around it; `erDiagram` has no direction control, so entity declaration order is the only layout lever.
 
 ## DAG pattern
 
@@ -97,26 +105,25 @@ flowchart LR
         stg_refunds["stg_refunds"]:::newNode
     end
 
-    subgraph transform[Transform]
+    subgraph intermediate[Intermediate]
         int_orders["int_orders"]:::existingNode
         int_refunds["int_refunds"]:::newNode
     end
 
     subgraph mart[Mart]
-        fct_orders["fct_orders"]:::changedNode
-        fct_refunds["fct_refunds"]:::newNode
+        dim_orders["dim_orders"]:::changedNode
+        fact_refunds["fact_refunds"]:::newNode
     end
 
     style staging fill:#f3f4f6,stroke:#d1d5db,color:#111827
-    style transform fill:#eef2ff,stroke:#c7d2fe,color:#111827
+    style intermediate fill:#eef2ff,stroke:#c7d2fe,color:#111827
     style mart fill:#fefce8,stroke:#fde68a,color:#111827
 
-    stg_orders --> int_orders --> fct_orders
-    stg_refunds --> int_refunds --> fct_refunds
-    fct_orders --> fct_refunds
+    stg_orders --> int_orders --> dim_orders
+    stg_refunds --> int_refunds --> fact_refunds
 ```
 
-- Use `flowchart LR` for pipeline/lineage flow (left-to-right reads naturally as "upstream → downstream"); use `flowchart TD` for ERDs (top-down reads more like a schema diagram).
+- Use `flowchart LR` for pipeline/lineage flow — left-to-right reads naturally as "upstream → downstream." Lineage DAGs are the flowchart use case; ERDs use `erDiagram` instead.
 
 ### When to use subgraphs
 
@@ -174,5 +181,10 @@ Also set generous node/rank spacing so boxes don't crowd:
 ## Rendering notes
 
 - GitHub and GitLab both render `classDef`/`class`/`style` directives natively in Mermaid code fences — no plugin needed.
-- Some older Confluence Mermaid plugins lag behind current Mermaid syntax versions; if the diagram is going into Confluence, verify `classDef` support first or fall back to plain colored shapes via inline `style nodeId fill:#...` on each node.
+- `classDef` on `erDiagram` needs **Mermaid 11+**. GitHub is current, so it works there; older Confluence plugins and self-hosted GitLab may not be. If the target renderer is unknown, verify before relying on colored ERDs.
 - Keep entity attribute lists short in ERDs (PK/FK + one or two key fields) — full column lists get visually noisy fast, especially once color is added on top.
+- Verify a diagram renders before shipping it, rather than trusting that the syntax is right:
+
+```bash
+npx -p @mermaid-js/mermaid-cli mmdc -i diagram.mmd -o out.png -s 2
+```
