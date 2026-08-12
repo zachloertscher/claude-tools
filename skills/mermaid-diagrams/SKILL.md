@@ -95,18 +95,25 @@ flowchart LR
     fct_orders --> fct_refunds
 ```
 
-- Use `subgraph` groupings for any DAG with 15+ nodes rather than letting Mermaid's auto-layout handle it flat.
 - Use `flowchart LR` for pipeline/lineage flow (left-to-right reads naturally as "upstream → downstream"); use `flowchart TD` for ERDs (top-down reads more like a schema diagram).
 
-## No legend
+### When to use subgraphs
 
-Do not add a legend subgraph. It's visually ugly, eats render area, and green-means-new is self-evident from context. State the convention in the caption line instead if it needs saying at all.
+Subgraph boxes add padding that shrinks the nodes inside, so they have to earn the space:
+
+| Nodes | Use subgraphs? |
+|---|---|
+| Under ~6 | No — the grouping costs more than it clarifies |
+| ~6–15 | Only if the diagram crosses a repo/service boundary |
+| 15+ | Yes — group them rather than letting auto-layout sprawl |
+
+## No legend, no caption
+
+Do not add a legend subgraph, and do not write a caption under the diagram. Legends eat render area; captions restate what the boxes and colors already say. Green-means-new is self-evident from context. If the convention genuinely needs stating, one short sentence in the surrounding prose is enough.
 
 ## Label subgraphs by boundary
 
 When a diagram spans more than one repo, service, or architecture layer, name each subgraph for the **boundary it represents** — the repo or service name — not just an abstract stage. Reviewers need to know which codebase a node lives in; that's what tells them where to look.
-
-**No caption under the diagram.** Don't restate what the boxes group or what the colors mean — the subgraph title already says it.
 
 Subgraph titles render large by default, and **theme variables do not control their size** — `fontSizeCluster` is not a real Mermaid variable and is silently ignored. Use a `classDef` with `font-size` applied to the subgraph id:
 
@@ -141,8 +148,7 @@ Also set generous node/rank spacing so boxes don't crowd:
 
 2. **Cut node count and shorten labels.** Eight nodes across three subgraphs renders much smaller than five nodes with no subgraphs. Drop nodes that don't carry meaning for the change being shown.
 3. **Prefer `LR` for wide screens, `TD` when there are few nodes** — a tall diagram uses the full container width per node; a wide one divides it.
-4. **Skip subgraphs when there are under ~6 nodes.** The grouping boxes add padding that shrinks the nodes inside.
-5. Use `<br/>` inside a label rather than one long string, so nodes stay squarer and text stays legible.
+4. Use `<br/>` inside a label rather than one long string, so nodes stay squarer and text stays legible.
 
 ## Rendering notes
 
